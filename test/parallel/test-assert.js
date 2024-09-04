@@ -30,8 +30,9 @@ const vm = require('vm');
 // Disable colored output to prevent color codes from breaking assertion
 // message comparisons. This should only be an issue when process.stdout
 // is a TTY.
-if (process.stdout.isTTY)
+if (process.stdout.isTTY) {
   process.env.NODE_DISABLE_COLORS = '1';
+}
 
 const strictEqualMessageStart = 'Expected values to be strictly equal:\n';
 const start = 'Expected values to be strictly deep-equal:';
@@ -277,8 +278,8 @@ test('assert.throws()', () => {
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
       message: 'Expected "actual" to be reference-equal to "expected":\n' +
-              '+ actual - expected\n\n' +
-              '+ [Error: foo]\n- [Error: foobar]'
+        '\n' +
+        '[Error: foo] !== [Error: foobar]\n'
     }
   );
 });
@@ -342,8 +343,7 @@ test('Test assertion messages', () => {
       () => assert.strictEqual(actual, ''),
       {
         generatedMessage: true,
-        message: msg || strictEqualMessageStart +
-                `+ actual - expected\n\n+ ${expected}\n- ''`
+        message: msg || `Expected values to be strictly equal:\n\n${expected} !== ''\n`
       }
     );
   }
@@ -359,31 +359,86 @@ test('Test assertion messages', () => {
   testShortAssertionMessage(100, '100');
   testShortAssertionMessage(NaN, 'NaN');
   testShortAssertionMessage(Infinity, 'Infinity');
-  testShortAssertionMessage('a', '"a"');
+  testShortAssertionMessage('a', '\'a\'');
   testShortAssertionMessage('foo', '\'foo\'');
   testShortAssertionMessage(0, '0');
   testShortAssertionMessage(Symbol(), 'Symbol()');
   testShortAssertionMessage(undefined, 'undefined');
   testShortAssertionMessage(-Infinity, '-Infinity');
-  testAssertionMessage([], '[]');
+  testShortAssertionMessage([], '[]');
+  testShortAssertionMessage({}, '{}');
   testAssertionMessage(/a/, '/a/');
   testAssertionMessage(/abc/gim, '/abc/gim');
-  testAssertionMessage({}, '{}');
-  testAssertionMessage([1, 2, 3], '[\n+   1,\n+   2,\n+   3\n+ ]');
   testAssertionMessage(function f() {}, '[Function: f]');
   testAssertionMessage(function() {}, '[Function (anonymous)]');
-  testAssertionMessage(circular,
-                       '<ref *1> {\n+   x: [Circular *1],\n+   y: 1\n+ }');
-  testAssertionMessage({ a: undefined, b: null },
-                       '{\n+   a: undefined,\n+   b: null\n+ }');
-  testAssertionMessage({ a: NaN, b: Infinity, c: -Infinity },
-                       '{\n+   a: NaN,\n+   b: Infinity,\n+   c: -Infinity\n+ }');
+
+  assert.throws(
+    () => assert.strictEqual([1, 2, 3], ''),
+    {
+      message: 'Expected values to be strictly equal:\n' +
+        '+ actual - expected\n' +
+        '\n' +
+        '+ [\n' +
+        '+   1,\n' +
+        '+   2,\n' +
+        '+   3\n' +
+        '+ ]\n' +
+        "- ''\n",
+      generatedMessage: true
+    }
+  );
+
+  assert.throws(
+    () => assert.strictEqual(circular, ''),
+    {
+      message: 'Expected values to be strictly equal:\n' +
+        '+ actual - expected\n' +
+        '\n' +
+        '+ <ref *1> {\n' +
+        '+   x: [Circular *1],\n' +
+        '+   y: 1\n' +
+        '+ }\n' +
+        "- ''\n",
+      generatedMessage: true
+    }
+  );
+
+  assert.throws(
+    () => assert.strictEqual({ a: undefined, b: null }, ''),
+    {
+      message: 'Expected values to be strictly equal:\n' +
+        '+ actual - expected\n' +
+        '\n' +
+        '+ {\n' +
+        '+   a: undefined,\n' +
+        '+   b: null\n' +
+        '+ }\n' +
+        "- ''\n",
+      generatedMessage: true
+    }
+  );
+
+  assert.throws(
+    () => assert.strictEqual({ a: NaN, b: Infinity, c: -Infinity }, ''),
+    {
+      message: 'Expected values to be strictly equal:\n' +
+        '+ actual - expected\n' +
+        '\n' +
+        '+ {\n' +
+        '+   a: NaN,\n' +
+        '+   b: Infinity,\n' +
+        '+   c: -Infinity\n' +
+        '+ }\n' +
+        "- ''\n",
+      generatedMessage: true
+    }
+  );
 
   // https://github.com/nodejs/node-v0.x-archive/issues/5292
   assert.throws(
     () => assert.strictEqual(1, 2),
     {
-      message: `${strictEqualMessageStart}\n1 !== 2\n`,
+      message: 'Expected values to be strictly equal:\n\n1 !== 2\n',
       generatedMessage: true
     }
   );
@@ -470,9 +525,9 @@ test('Long values should be truncated for display', () => {
     assert.strictEqual('A'.repeat(1000), '');
   }, (err) => {
     assert.strictEqual(err.code, 'ERR_ASSERTION');
-    assert.strictEqual(err.message,
-                       `${strictEqualMessageStart}+ actual - expected\n\n` +
-                      `+ '${'A'.repeat(1000)}'\n- ''`);
+    assert.strictEqual(err.message, 'Expected values to be strictly equal:\n' +
+      '\n' +
+      `'${'A'.repeat(512)}... !== ''\n`);
     assert.strictEqual(err.actual.length, 1000);
     assert.ok(inspect(err).includes(`actual: '${'A'.repeat(488)}...'`));
     return true;
@@ -485,7 +540,7 @@ test('Output that extends beyond 10 lines should also be truncated for display',
     assert.strictEqual(multilineString, '');
   }, (err) => {
     assert.strictEqual(err.code, 'ERR_ASSERTION');
-    assert.strictEqual(err.message.split('\n').length, 19);
+    assert.strictEqual(err.message.split('\n').length, 4);
     assert.strictEqual(err.actual.split('\n').length, 16);
     assert.ok(inspect(err).includes(
       "actual: 'fhqwhgads\\n' +\n" +
@@ -566,84 +621,80 @@ test('Test strict assert', () => {
   Error.stackTraceLimit = tmpLimit;
 
   // Test error diffs.
-  let message = [
-    start,
-    `${actExp} ... Lines skipped`,
-    '',
-    '  [',
-    '    [',
-    '      [',
-    '        1,',
-    '        2,',
-    '+       3',
-    "-       '3'",
-    '      ]',
-    '...',
-    '    4,',
-    '    5',
-    '  ]'].join('\n');
+  let message = 'Expected values to be strictly deep-equal:\n' +
+    '+ actual - expected\n' +
+    '\n' +
+    '  [\n' +
+    '    [\n' +
+    '      [\n' +
+    '        1,\n' +
+    '        2,\n' +
+    '+       3\n' +
+    "-       '3'\n" +
+    '      ]\n' +
+    '    ],\n' +
+    '    4,\n' +
+    '    5\n' +
+    '  ]\n';
   strict.throws(
     () => strict.deepEqual([[[1, 2, 3]], 4, 5], [[[1, 2, '3']], 4, 5]),
     { message });
 
-  message = [
-    start,
-    `${actExp} ... Lines skipped`,
-    '',
-    '  [',
-    '    1,',
-    '...',
-    '    1,',
-    '    0,',
-    '-   1,',
-    '    1,',
-    '...',
-    '    1,',
-    '    1',
-    '  ]',
-  ].join('\n');
+  message = 'Expected values to be strictly deep-equal:\n' +
+  '+ actual - expected\n' +
+  "... Lines skipped which didn't differ\n" +
+  '... Lines skipped which were inserted\n' +
+  '... Lines skipped which were deleted\n' +
+  '\n' +
+  '  [\n' +
+  '    1,\n' +
+  '    1,\n' +
+  '    1,\n' +
+  '    1,\n' +
+  '    1,\n' +
+  '...\n' +
+  '-   1\n' +
+  '  ]\n';
   strict.throws(
     () => strict.deepEqual(
       [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1]),
     { message });
 
-  message = [
-    start,
-    `${actExp} ... Lines skipped`,
-    '',
-    '  [',
-    '    1,',
-    '...',
-    '    1,',
-    '    0,',
-    '+   1,',
-    '    1,',
-    '    1,',
-    '    1',
-    '  ]',
-  ].join('\n');
+  message = 'Expected values to be strictly deep-equal:\n' +
+  '+ actual - expected\n' +
+  "... Lines skipped which didn't differ\n" +
+  '... Lines skipped which were inserted\n' +
+  '... Lines skipped which were deleted\n' +
+  '\n' +
+  '  [\n' +
+  '    1,\n' +
+  '    1,\n' +
+  '    1,\n' +
+  '    0,\n' +
+  '    1,\n' +
+  '...\n' +
+  '+   1\n' +
+  '  ]\n';
   strict.throws(
     () => strict.deepEqual(
-      [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1]),
+      [1, 1, 1, 0, 1, 1, 1, 1],
+      [1, 1, 1, 0, 1, 1, 1]),
     { message });
 
-  message = [
-    start,
-    actExp,
-    '',
-    '  [',
-    '    1,',
-    '+   2,',
-    '-   1,',
-    '    1,',
-    '    1,',
-    '    0,',
-    '+   1,',
-    '    1',
-    '  ]',
-  ].join('\n');
+  message = 'Expected values to be strictly deep-equal:\n' +
+    '+ actual - expected\n' +
+    '\n' +
+    '  [\n' +
+    '    1,\n' +
+    '+   2,\n' +
+    '    1,\n' +
+    '    1,\n' +
+    '-   1,\n' +
+    '    0,\n' +
+    '    1,\n' +
+    '+   1\n' +
+    '  ]\n';
   strict.throws(
     () => strict.deepEqual(
       [1, 2, 1, 1, 0, 1, 1],
@@ -659,7 +710,7 @@ test('Test strict assert', () => {
     '+   2,',
     '+   1',
     '+ ]',
-    '- undefined',
+    '- undefined\n',
   ].join('\n');
   strict.throws(
     () => strict.deepEqual([1, 2, 1], undefined),
@@ -673,22 +724,48 @@ test('Test strict assert', () => {
     '+   1,',
     '    2,',
     '    1',
-    '  ]',
+    '  ]\n',
   ].join('\n');
   strict.throws(
     () => strict.deepEqual([1, 2, 1], [2, 1]),
     { message });
 
-  message = `${start}\n` +
-    `${actExp} ... Lines skipped\n` +
-    '\n' +
-    '  [\n' +
-    '+   1,\n'.repeat(25) +
-    '...\n' +
-    '-   2,\n'.repeat(25) +
-    '...';
+  message = 'Expected values to be strictly deep-equal:\n' +
+  '+ actual - expected\n' +
+  "... Lines skipped which didn't differ\n" +
+  '... Lines skipped which were inserted\n' +
+  '... Lines skipped which were deleted\n' +
+  '\n' +
+  '  [\n' +
+  '+   1,\n' +
+  '...\n' +
+  '+   1\n' +
+  '-   2,\n' +
+  '...\n' +
+  '-   2\n' +
+  '  ]\n';
   strict.throws(
     () => strict.deepEqual(Array(28).fill(1), Array(28).fill(2)),
+    { message });
+
+  message = 'Expected values to be strictly deep-equal:\n' +
+    '+ actual - expected\n' +
+    "... Lines skipped which didn't differ\n" +
+    '... Lines skipped which were inserted\n' +
+    '... Lines skipped which were deleted\n' +
+    '\n' +
+    '  [\n' +
+    '+   1,\n' +
+    '...\n' +
+    '+   3\n' +
+    '-   2,\n' +
+    '...\n' +
+    '-   4,\n' +
+    '...\n' +
+    '-   4\n' +
+    '  ]\n';
+  strict.throws(
+    () => strict.deepEqual([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3], [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4]),
     { message });
 
   const obj1 = {};
@@ -703,7 +780,7 @@ test('Test strict assert', () => {
     '- {\n' +
     '-   [Symbol(nodejs.util.inspect.custom)]: [Function (anonymous)],\n' +
     "-   loop: 'forever'\n" +
-    '- }'
+    '- }\n'
   });
 
   // notDeepEqual tests
@@ -819,11 +896,7 @@ test('Additional asserts', () => {
     {
       code: 'ERR_ASSERTION',
       constructor: assert.AssertionError,
-      message: 'Expected values to be strictly equal:\n' +
-        '+ actual - expected\n' +
-        '\n' +
-        "+ 'string'\n" +
-        '- false'
+      message: "Expected values to be strictly equal:\n\n'string' !== false\n"
     }
   );
 
@@ -835,11 +908,7 @@ test('Additional asserts', () => {
     {
       code: 'ERR_ASSERTION',
       constructor: assert.AssertionError,
-      message: 'Expected values to be strictly equal:\n' +
-        '+ actual - expected\n' +
-        '\n' +
-        "+ 'string'\n" +
-        '- false'
+      message: "Expected values to be strictly equal:\n\n'string' !== false\n"
     }
   );
 
@@ -851,11 +920,7 @@ test('Additional asserts', () => {
   }, {
     code: 'ERR_ASSERTION',
     constructor: assert.AssertionError,
-    message: 'Expected values to be strictly equal:\n' +
-      '+ actual - expected\n' +
-      '\n' +
-      "+ 'string'\n" +
-      '- false'
+    message: "Expected values to be strictly equal:\n\n'string' !== false\n"
     }
   );
   /* eslint-enable @stylistic/js/indent */
@@ -1008,7 +1073,7 @@ test('Throws accepts objects', () => {
                '-   foo: undefined,\n' +
                "    message: 'Wrong value',\n" +
                "    name: 'TypeError'\n" +
-               '  }'
+               '  }\n'
     }
   );
 
@@ -1026,7 +1091,7 @@ test('Throws accepts objects', () => {
                '-   foo: undefined,\n' +
                "    message: 'Wrong value',\n" +
                "    name: 'TypeError'\n" +
-               '  }'
+               '  }\n'
     }
   );
 
@@ -1060,7 +1125,7 @@ test('Throws accepts objects', () => {
                "    message: 'e',\n" +
                "+   name: 'TypeError'\n" +
                "-   name: 'Error'\n" +
-               '  }'
+               '  }\n'
     }
   );
   assert.throws(
@@ -1074,7 +1139,7 @@ test('Throws accepts objects', () => {
                "+   message: 'foo',\n" +
                "-   message: '',\n" +
                "    name: 'Error'\n" +
-               '  }'
+               '  }\n'
     }
   );
 
@@ -1131,7 +1196,7 @@ test('Additional assert', () => {
   assert.throws(
     () => assert.strictEqual([], []),
     {
-      message: 'Values have same structure but are not reference-equal:\n\n[]\n'
+      message: 'Expected "actual" to be reference-equal to "expected":\n\n[] !== []\n'
     }
   );
 
@@ -1142,7 +1207,7 @@ test('Additional assert', () => {
       {
         message: 'Expected "actual" to be reference-equal to "expected":\n' +
                 '+ actual - expected\n\n' +
-                "+ [Arguments] {\n- {\n    '0': 'a'\n  }"
+                "+ [Arguments] {\n- {\n    '0': 'a'\n  }\n"
       }
     );
   }
@@ -1169,7 +1234,7 @@ test('Additional assert', () => {
               "+   message: 'foobar',\n" +
               '-   message: /fooa/,\n' +
               "    name: 'TypeError'\n" +
-              '  }'
+              '  }\n'
     }
   );
 
@@ -1190,7 +1255,7 @@ test('Additional assert', () => {
                 '+ null\n' +
                 '- {\n' +
                 "-   message: 'foo'\n" +
-                '- }'
+                '- }\n'
       }
     );
 
@@ -1217,11 +1282,7 @@ test('Additional assert', () => {
     {
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
-      message: strictEqualMessageStart +
-              '+ actual - expected\n\n' +
-              "+ 'test test'\n" +
-              "- 'test foobar'\n" +
-              '        ^'
+      message: "Expected values to be strictly equal:\n\n'test test' !== 'test foobar'\n",
     }
   );
 
@@ -1477,19 +1538,6 @@ test('Additional assert', () => {
       }
     );
     assert.doesNotMatch('I will pass', /different$/);
-  }
-
-  {
-    const tempColor = inspect.defaultOptions.colors;
-    assert.throws(() => {
-      inspect.defaultOptions.colors = true;
-      // Guarantee the position indicator is placed correctly.
-      assert.strictEqual(111554n, 11111115);
-    }, (err) => {
-      assert.strictEqual(inspect(err).split('\n')[5], '     ^');
-      inspect.defaultOptions.colors = tempColor;
-      return true;
-    });
   }
 });
 

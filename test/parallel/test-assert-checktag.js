@@ -29,14 +29,16 @@ test('', { skip: !hasCrypto }, () => {
       () => assert.deepStrictEqual(date, fake),
       {
         message: 'Expected values to be strictly deep-equal:\n' +
-                '+ actual - expected\n\n+ 2016-01-01T00:00:00.000Z\n- Date {}'
+          '\n' +
+          '2016-01-01T00:00:00.000Z !== Date {}\n'
       }
     );
     assert.throws(
       () => assert.deepStrictEqual(fake, date),
       {
         message: 'Expected values to be strictly deep-equal:\n' +
-                '+ actual - expected\n\n+ Date {}\n- 2016-01-01T00:00:00.000Z'
+          '\n' +
+          'Date {} !== 2016-01-01T00:00:00.000Z\n'
       }
     );
   }
