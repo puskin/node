@@ -485,7 +485,7 @@ test('Output that extends beyond 10 lines should also be truncated for display',
     assert.strictEqual(multilineString, '');
   }, (err) => {
     assert.strictEqual(err.code, 'ERR_ASSERTION');
-    assert.strictEqual(err.message.split('\n').length, 19);
+    assert.strictEqual(err.message.split('\n').length, 11);
     assert.strictEqual(err.actual.split('\n').length, 16);
     assert.ok(inspect(err).includes(
       "actual: 'fhqwhgads\\n' +\n" +
@@ -568,7 +568,10 @@ test('Test strict assert', () => {
   // Test error diffs.
   let message = [
     start,
-    `${actExp} ... Lines skipped`,
+    actExp,
+    "... Lines skipped which didn't differ",
+    '... Lines skipped which were identical and inserted',
+    '... Lines skipped which were identical and deleted',
     '',
     '  [',
     '    [',
@@ -586,64 +589,68 @@ test('Test strict assert', () => {
     () => strict.deepEqual([[[1, 2, 3]], 4, 5], [[[1, 2, '3']], 4, 5]),
     { message });
 
-  message = [
-    start,
-    `${actExp} ... Lines skipped`,
-    '',
-    '  [',
-    '    1,',
-    '...',
-    '    1,',
-    '    0,',
-    '-   1,',
-    '    1,',
-    '...',
-    '    1,',
-    '    1',
-    '  ]',
-  ].join('\n');
+  message = 'Expected values to be strictly deep-equal:\n' +
+      '+ actual - expected\n' +
+      "... Lines skipped which didn't differ\n" +
+      '... Lines skipped which were identical and inserted\n' +
+      '... Lines skipped which were identical and deleted\n' +
+      '\n' +
+      '  [\n' +
+      '    1,\n' +
+      '    1,\n' +
+      '    1,\n' +
+      '    1,\n' +
+      '    1,\n' +
+      '-   1,\n' +
+      '...\n' +
+      '    1,\n' +
+      '...\n' +
+      '    1,\n' +
+      '    1\n' +
+      '  ]';
   strict.throws(
     () => strict.deepEqual(
       [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1]),
     { message });
 
-  message = [
-    start,
-    `${actExp} ... Lines skipped`,
-    '',
-    '  [',
-    '    1,',
-    '...',
-    '    1,',
-    '    0,',
-    '+   1,',
-    '    1,',
-    '    1,',
-    '    1',
-    '  ]',
-  ].join('\n');
+  message = 'Expected values to be strictly deep-equal:\n' +
+    '+ actual - expected\n' +
+    "... Lines skipped which didn't differ\n" +
+    '... Lines skipped which were identical and inserted\n' +
+    '... Lines skipped which were identical and deleted\n' +
+    '\n' +
+    '  [\n' +
+    '    1,\n' +
+    '    1,\n' +
+    '    1,\n' +
+    '    1,\n' +
+    '    1,\n' +
+    '+   1,\n' +
+    '...\n' +
+    '    1,\n' +
+    '    1,\n' +
+    '    1\n' +
+    '  ]';
   strict.throws(
     () => strict.deepEqual(
       [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1]),
     { message });
 
-  message = [
-    start,
-    actExp,
-    '',
-    '  [',
-    '    1,',
-    '+   2,',
-    '-   1,',
-    '    1,',
-    '    1,',
-    '    0,',
-    '+   1,',
-    '    1',
-    '  ]',
-  ].join('\n');
+  message = 'Expected values to be strictly deep-equal:\n' +
+    '+ actual - expected\n' +
+    '\n' +
+    '  [\n' +
+    '    1,\n' +
+    '+   2,\n' +
+    '    1,\n' +
+    '    1,\n' +
+    '+   0,\n' +
+    '    1,\n' +
+    '-   0,\n' +
+    '    1\n' +
+    '  ]';
   strict.throws(
     () => strict.deepEqual(
       [1, 2, 1, 1, 0, 1, 1],
@@ -679,16 +686,42 @@ test('Test strict assert', () => {
     () => strict.deepEqual([1, 2, 1], [2, 1]),
     { message });
 
-  message = `${start}\n` +
-    `${actExp} ... Lines skipped\n` +
-    '\n' +
-    '  [\n' +
-    '+   1,\n'.repeat(25) +
-    '...\n' +
-    '-   2,\n'.repeat(25) +
-    '...';
+  message = 'Expected values to be strictly deep-equal:\n' +
+  '+ actual - expected\n' +
+  "... Lines skipped which didn't differ\n" +
+  '... Lines skipped which were identical and inserted\n' +
+  '... Lines skipped which were identical and deleted\n' +
+  '\n' +
+  '  [\n' +
+  '+   1,\n' +
+  '...\n' +
+  '+   1\n' +
+  '-   2,\n' +
+  '...\n' +
+  '-   2\n' +
+  '  ]';
   strict.throws(
     () => strict.deepEqual(Array(28).fill(1), Array(28).fill(2)),
+    { message });
+
+  message = 'Expected values to be strictly deep-equal:\n' +
+    '+ actual - expected\n' +
+    "... Lines skipped which didn't differ\n" +
+    '... Lines skipped which were identical and inserted\n' +
+    '... Lines skipped which were identical and deleted\n' +
+    '\n' +
+    '  [\n' +
+    '+   1,\n' +
+    '...\n' +
+    '+   3\n' +
+    '-   2,\n' +
+    '...\n' +
+    '-   4,\n' +
+    '...\n' +
+    '-   4\n' +
+    '  ]';
+  strict.throws(
+    () => strict.deepEqual([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3], [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4]),
     { message });
 
   const obj1 = {};

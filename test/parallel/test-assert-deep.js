@@ -70,9 +70,19 @@ test('deepEqual', () => {
     () => assert.deepStrictEqual(arr, buf),
     {
       code: 'ERR_ASSERTION',
-      message: `${defaultMsgStartFull} ... Lines skipped\n\n` +
-              '+ Uint8Array(4) [\n' +
-              '- Buffer(4) [Uint8Array] [\n    120,\n...\n    122,\n    10\n  ]'
+      message: 'Expected values to be strictly deep-equal:\n' +
+        '+ actual - expected\n' +
+        "... Lines skipped which didn't differ\n" +
+        '... Lines skipped which were identical and inserted\n' +
+        '... Lines skipped which were identical and deleted\n' +
+        '\n' +
+        '+ Uint8Array(4) [\n' +
+        '- Buffer(4) [Uint8Array] [\n' +
+        '    120,\n' +
+        '...\n' +
+        '    122,\n' +
+        '    10\n' +
+        '  ]'
     }
   );
   assert.deepEqual(arr, buf);
@@ -964,23 +974,23 @@ test('Check extra properties on errors', () => {
       () => assert.deepStrictEqual(a, b),
       {
         operator: 'throws',
-        message: `${defaultMsgStartFull}\n\n` +
-                '  [TypeError: foo] {\n+   foo: \'bar\'\n-   foo: \'baz\'\n  }',
+        message: '',
       }
     ),
     {
       message: 'Expected values to be strictly deep-equal:\n' +
-        '+ actual - expected ... Lines skipped\n' +
+        '+ actual - expected\n' +
         '\n' +
         '  Comparison {\n' +
-        "    message: 'Expected values to be strictly deep-equal:\\n' +\n" +
-        '...\n' +
-        "      '  [TypeError: foo] {\\n' +\n" +
-        "      \"+   foo: 'bar'\\n\" +\n" +
-        "+     \"-   foo: 'baz.'\\n\" +\n" +
-        "-     \"-   foo: 'baz'\\n\" +\n" +
-        "      '  }',\n" +
+        "+   message: 'Expected values to be strictly deep-equal:\\n' +\n" +
+        "+     '+ actual - expected\\n' +\n" +
+        "+     '\\n' +\n" +
+        "+     '  [TypeError: foo] {\\n' +\n" +
+        `+     "+   foo: 'bar'\\n" +\n` +
+        `+     "-   foo: 'baz.'\\n" +\n` +
+        "+     '  }',\n" +
         "+   operator: 'deepStrictEqual'\n" +
+        "-   message: '',\n" +
         "-   operator: 'throws'\n" +
         '  }'
     }
