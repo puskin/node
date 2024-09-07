@@ -72,14 +72,11 @@ test('deepEqual', () => {
       code: 'ERR_ASSERTION',
       message: 'Expected values to be strictly deep-equal:\n' +
         '+ actual - expected\n' +
-        "... Lines skipped which didn't differ\n" +
-        '... Lines skipped which were identical and inserted\n' +
-        '... Lines skipped which were identical and deleted\n' +
         '\n' +
         '+ Uint8Array(4) [\n' +
         '- Buffer(4) [Uint8Array] [\n' +
         '    120,\n' +
-        '...\n' +
+        '    121,\n' +
         '    122,\n' +
         '    10\n' +
         '  ]'
@@ -884,7 +881,7 @@ test('Additional tests', () => {
     {
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
-      message: `${defaultMsgStartFull}\n\n+ /aa/gim\n- /aa/im\n      ^`
+      message: `${defaultMsgStartFull}\n\n+ /aa/gim\n- /aa/im`
     });
 
   {
@@ -896,13 +893,13 @@ test('Additional tests', () => {
   assert.throws(
     // eslint-disable-next-line no-restricted-syntax
     () => assert.deepStrictEqual(4, '4'),
-    { message: `${defaultMsgStart}\n4 !== '4'\n` }
+    { message: `${defaultMsgStart}+ actual - expected\n\n+ 4\n- '4'` }
   );
 
   assert.throws(
     // eslint-disable-next-line no-restricted-syntax
     () => assert.deepStrictEqual(true, 1),
-    { message: `${defaultMsgStart}\ntrue !== 1\n` }
+    { message: `${defaultMsgStart}+ actual - expected\n\n+ true\n- 1` }
   );
 
   assertDeepAndStrictEqual({ a: 4, b: '1' }, { b: '1', a: 4 });
@@ -1036,7 +1033,15 @@ test('Strict equal with identical objects that are not identical ' +
     {
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
-      message: /\.\.\./g
+      message: 'Expected values to be strictly deep-equal:\n' +
+        '+ actual - expected\n' +
+        '\n' +
+        '  {\n' +
+        '    symbol0: Symbol(),\n' +
+        '    symbol10: Symbol(),\n' +
+        '    symbol11: Symbol(),\n' +
+        '    symbol12: Symbol(),\n' +
+        '    symbol13: Symbol(),'
     }
   );
 });

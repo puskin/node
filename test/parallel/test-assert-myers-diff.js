@@ -61,21 +61,6 @@ describe('myersDiff', () => {
     ]);
   });
 
-  test('stringified arrays', () => {
-    const actual = ['[', '  1,', '  2,', '  3', ']'];
-    const expected = ['[', '  1,', '  2', ']'];
-    const diff = myersDiff(actual, expected);
-
-    deepStrictEqual(diff, [
-      { type: 'nop', value: '[' },
-      { type: 'nop', value: '  1,' },
-      { type: 'insert', value: '  2,' },
-      { type: 'insert', value: '  3' },
-      { type: 'delete', value: '  2' },
-      { type: 'nop', value: ']' },
-    ]);
-  });
-
   test('objects', () => {
     const actual = { a: 1, b: 2, c: { x: 1, y: 2 }, d: 4, e: 5 };
     const expected = { a: 1, b: 2, c: { x: 8, y: 2 }, d: 9, e: 5 };
@@ -100,7 +85,7 @@ describe('myersDiff', () => {
   test('non omogeneus objects', () => {
     const actual = { a: 1, b: 2, c: { x: [1, 2, 3], y: 2 } };
     const expected = { a: 1, b: 3, c: { x: 8, y: [3, 4, 5] } };
-    const diff = myersDiff(actual, expected);
+    const diff = myersDiff(actual, expected, true);
 
     deepStrictEqual(
       diff,
