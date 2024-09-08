@@ -79,7 +79,7 @@ test('deepEqual', () => {
         '    121,\n' +
         '    122,\n' +
         '    10\n' +
-        '  ]'
+        '  ]\n'
     }
   );
   assert.deepEqual(arr, buf);
@@ -99,7 +99,7 @@ test('deepEqual', () => {
                 '    122,\n' +
                 '    10,\n' +
                 '+   prop: 1\n' +
-                '  ]'
+                '  ]\n'
       }
     );
     assert.notDeepEqual(buf2, buf);
@@ -119,7 +119,7 @@ test('deepEqual', () => {
                 '    122,\n' +
                 '    10,\n' +
                 '-   prop: 5\n' +
-                '  ]'
+                '  ]\n'
       }
     );
     assert.notDeepEqual(arr, arr2);
@@ -134,7 +134,7 @@ test('date', () => {
       code: 'ERR_ASSERTION',
       message: `${defaultMsgStartFull}\n\n` +
               '+ 2016-01-01T00:00:00.000Z\n- MyDate 2016-01-01T00:00:00.000Z' +
-              " {\n-   '0': '1'\n- }"
+              " {\n-   '0': '1'\n- }\n"
     }
   );
   assert.throws(
@@ -143,7 +143,7 @@ test('date', () => {
       code: 'ERR_ASSERTION',
       message: `${defaultMsgStartFull}\n\n` +
               '+ MyDate 2016-01-01T00:00:00.000Z {\n' +
-              "+   '0': '1'\n+ }\n- 2016-01-01T00:00:00.000Z"
+              "+   '0': '1'\n+ }\n- 2016-01-01T00:00:00.000Z\n"
     }
   );
 });
@@ -158,7 +158,7 @@ test('regexp', () => {
     {
       code: 'ERR_ASSERTION',
       message: `${defaultMsgStartFull}\n\n` +
-              "+ /test/\n- MyRegExp /test/ {\n-   '0': '1'\n- }"
+              "+ /test/\n- MyRegExp /test/ {\n-   '0': '1'\n- }\n"
     }
   );
 });
@@ -481,7 +481,7 @@ test('es6 Maps and Sets', () => {
       {
         code: 'ERR_ASSERTION',
         message: `${defaultMsgStartFull}\n\n` +
-                 "  Map(1) {\n+   1 => 1\n-   1 => '1'\n  }"
+                 "  Map(1) {\n+   1 => 1\n-   1 => '1'\n  }\n"
       }
     );
   }
@@ -853,35 +853,35 @@ test('Additional tests', () => {
     {
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
-      message: `${defaultMsgStartFull}\n\n+ /ab/\n- /a/`
+      message: 'Expected values to be strictly deep-equal:\n\n/ab/ !== /a/\n'
     });
   assert.throws(
     () => assert.deepStrictEqual(/a/g, /a/),
     {
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
-      message: `${defaultMsgStartFull}\n\n+ /a/g\n- /a/`
+      message: 'Expected values to be strictly deep-equal:\n\n/a/g !== /a/\n'
     });
   assert.throws(
     () => assert.deepStrictEqual(/a/i, /a/),
     {
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
-      message: `${defaultMsgStartFull}\n\n+ /a/i\n- /a/`
+      message: 'Expected values to be strictly deep-equal:\n\n/a/i !== /a/\n'
     });
   assert.throws(
     () => assert.deepStrictEqual(/a/m, /a/),
     {
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
-      message: `${defaultMsgStartFull}\n\n+ /a/m\n- /a/`
+      message: 'Expected values to be strictly deep-equal:\n\n/a/m !== /a/\n'
     });
   assert.throws(
     () => assert.deepStrictEqual(/aa/igm, /aa/im),
     {
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
-      message: `${defaultMsgStartFull}\n\n+ /aa/gim\n- /aa/im`
+      message: 'Expected values to be strictly deep-equal:\n\n/aa/gim !== /aa/im\n'
     });
 
   {
@@ -893,13 +893,13 @@ test('Additional tests', () => {
   assert.throws(
     // eslint-disable-next-line no-restricted-syntax
     () => assert.deepStrictEqual(4, '4'),
-    { message: `${defaultMsgStart}+ actual - expected\n\n+ 4\n- '4'` }
+    { message: `${defaultMsgStart}\n4 !== '4'\n` }
   );
 
   assert.throws(
     // eslint-disable-next-line no-restricted-syntax
     () => assert.deepStrictEqual(true, 1),
-    { message: `${defaultMsgStart}+ actual - expected\n\n+ true\n- 1` }
+    { message: `${defaultMsgStart}\ntrue !== 1\n` }
   );
 
   assertDeepAndStrictEqual({ a: 4, b: '1' }, { b: '1', a: 4 });
@@ -916,7 +916,7 @@ test('Having the same number of owned properties && the same set of keys', () =>
                 {
                   code: 'ERR_ASSERTION',
                   name: 'AssertionError',
-                  message: `${defaultMsgStartFull}\n\n  [\n+   4\n-   '4'\n  ]`
+                  message: `${defaultMsgStartFull}\n\n  [\n+   4\n-   '4'\n  ]\n`
                 });
   assert.throws(
     () => assert.deepStrictEqual({ a: 4 }, { a: 4, b: true }),
@@ -924,7 +924,7 @@ test('Having the same number of owned properties && the same set of keys', () =>
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
       message: `${defaultMsgStartFull}\n\n  ` +
-              '{\n    a: 4,\n-   b: true\n  }'
+              '{\n    a: 4,\n-   b: true\n  }\n'
     });
   assert.throws(
     () => assert.deepStrictEqual(['a'], { 0: 'a' }),
@@ -932,7 +932,7 @@ test('Having the same number of owned properties && the same set of keys', () =>
       code: 'ERR_ASSERTION',
       name: 'AssertionError',
       message: `${defaultMsgStartFull}\n\n` +
-              "+ [\n+   'a'\n+ ]\n- {\n-   '0': 'a'\n- }"
+              "+ [\n+   'a'\n+ ]\n- {\n-   '0': 'a'\n- }\n"
     });
 });
 
@@ -985,11 +985,11 @@ test('Check extra properties on errors', () => {
         "+     '  [TypeError: foo] {\\n' +\n" +
         `+     "+   foo: 'bar'\\n" +\n` +
         `+     "-   foo: 'baz.'\\n" +\n` +
-        "+     '  }',\n" +
+        "+     '  }\\n',\n" +
         "+   operator: 'deepStrictEqual'\n" +
         "-   message: '',\n" +
         "-   operator: 'throws'\n" +
-        '  }'
+        '  }\n'
     }
   );
 });
@@ -1002,7 +1002,7 @@ test('Check proxies', () => {
   assert.throws(
     () => assert.deepStrictEqual(arrProxy, [1, 2, 3]),
     { message: `${defaultMsgStartFull}\n\n` +
-               '  [\n    1,\n    2,\n-   3\n  ]' }
+               '  [\n    1,\n    2,\n-   3\n  ]\n' }
   );
   util.inspect.defaultOptions = tmp;
 
@@ -1041,7 +1041,7 @@ test('Strict equal with identical objects that are not identical ' +
         '    symbol10: Symbol(),\n' +
         '    symbol11: Symbol(),\n' +
         '    symbol12: Symbol(),\n' +
-        '    symbol13: Symbol(),'
+        '    symbol13: Symbol(),\n'
     }
   );
 });
@@ -1067,7 +1067,7 @@ test('Basic array out of bounds check', () => {
               '    1,\n' +
               '    2,\n' +
               '+   3\n' +
-              '  ]'
+              '  ]\n'
     }
   );
 });
