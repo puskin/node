@@ -652,8 +652,8 @@ test('Test strict assert', () => {
   '    1,\n' +
   '    1,\n' +
   '    1,\n' +
-  '-   1\n' +
   '...\n' +
+  '-   1\n' +
   '  ]\n';
   strict.throws(
     () => strict.deepEqual(
@@ -673,8 +673,8 @@ test('Test strict assert', () => {
   '    1,\n' +
   '    0,\n' +
   '    1,\n' +
-  '+   1\n' +
   '...\n' +
+  '+   1\n' +
   '  ]\n';
   strict.throws(
     () => strict.deepEqual(
