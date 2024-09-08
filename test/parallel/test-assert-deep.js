@@ -1363,8 +1363,8 @@ test('Comparing two different WeakSet instances', () => {
 });
 
 test('Comparing two arrays nested inside object, with overlapping elements', () => {
-  const actual = { a: {b: [1, 2, 3] } };
-  const expected = { a: {b: [3, 4, 5] } };
+  const actual = { a: { b: [1, 2, 3] } };
+  const expected = { a: { b: [3, 4, 5] } };
 
   assert.throws(
     () => assert.deepStrictEqual(actual, expected),
@@ -1387,11 +1387,11 @@ test('Comparing two arrays nested inside object, with overlapping elements', () 
         '  }\n'
     }
   );
-})
+});
 
 test('Comparing two arrays nested inside object, with overlapping elements, swapping keys', () => {
-  const actual = { a: {b: [1, 2, 3], c: 2 } };
-  const expected = { a: {b: 1, c: [3, 4, 5] } };
+  const actual = { a: { b: [1, 2, 3], c: 2 } };
+  const expected = { a: { b: 1, c: [3, 4, 5] } };
 
   assert.throws(
     () => assert.deepStrictEqual(actual, expected),
@@ -1417,24 +1417,24 @@ test('Comparing two arrays nested inside object, with overlapping elements, swap
         '  }\n'
     }
   );
-})
+});
 
 test('Detects differences in deeply nested arrays instead of seeing a new object', () => {
   const actual = [
-    {a: 1},
+    { a: 1 },
     2,
     3,
     4,
-    {c: [1, 2, 3]}
+    { c: [1, 2, 3] },
   ];
   const expected = [
-    {a: 1},
+    { a: 1 },
     2,
     3,
     4,
-    {c: [3, 4, 5]}
+    { c: [3, 4, 5] },
   ];
-  
+
   assert.throws(
     () => assert.deepStrictEqual(actual, expected),
     {
@@ -1463,4 +1463,4 @@ test('Detects differences in deeply nested arrays instead of seeing a new object
         '  ]\n'
     }
   );
-})
+});
