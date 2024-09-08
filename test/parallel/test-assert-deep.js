@@ -1361,3 +1361,60 @@ test('Comparing two different WeakSet instances', () => {
   const weakSet2 = new WeakSet();
   assertNotDeepOrStrict(weakSet1, weakSet2);
 });
+
+test('Comparing two arrays nested inside object, with overlapping elements', () => {
+  const actual = { a: {b: [1, 2, 3] } };
+  const expected = { a: {b: [3, 4, 5] } };
+
+  assert.throws(
+    () => assert.deepStrictEqual(actual, expected),
+    {
+      code: 'ERR_ASSERTION',
+      name: 'AssertionError',
+      message: 'Expected values to be strictly deep-equal:\n' +
+        '+ actual - expected\n' +
+        '\n' +
+        '  {\n' +
+        '    a: {\n' +
+        '      b: [\n' +
+        '+       1,\n' +
+        '+       2,\n' +
+        '        3,\n' +
+        '-       4,\n' +
+        '-       5\n' +
+        '      ]\n' +
+        '    }\n' +
+        '  }\n'
+    }
+  );
+})
+
+test('Comparing two arrays nested inside object, with overlapping elements, swapping keys', () => {
+  const actual = { a: {b: [1, 2, 3], c: 2 } };
+  const expected = { a: {b: 1, c: [3, 4, 5] } };
+
+  assert.throws(
+    () => assert.deepStrictEqual(actual, expected),
+    {
+      code: 'ERR_ASSERTION',
+      name: 'AssertionError',
+      message: 'Expected values to be strictly deep-equal:\n' +
+        '+ actual - expected\n' +
+        '\n' +
+        '  {\n' +
+        '    a: {\n' +
+        '+     b: [\n' +
+        '+       1,\n' +
+        '+       2,\n' +
+        '-     b: 1,\n' +
+        '-     c: [\n' +
+        '        3,\n' +
+        '-       4,\n' +
+        '-       5\n' +
+        '      ],\n' +
+        '+     c: 2\n' +
+        '    }\n' +
+        '  }\n'
+    }
+  );
+})
