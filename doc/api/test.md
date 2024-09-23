@@ -1523,6 +1523,25 @@ The `timeout` option can be used to fail the test if it takes longer than
 canceling tests because a running test might block the application thread and
 thus prevent the scheduled cancellation.
 
+## `test.each([testCases])([name][, options][, fn])`
+
+<!-- YAML
+added: REPLACEME
+-->
+
+* `testCases` {Array} An array of test cases. Each test case is an array of
+  arguments to pass to the test
+
+```js
+  test.each([
+    [1, 2, 3],
+    [1, 3, 4],
+    [2, 3, 5],
+  ])('given %d and %d', (a, b, expected) => {
+    equal(a + b, expected);
+  });
+```
+
 ## `test.skip([name][, options][, fn])`
 
 Shorthand for skipping a test,
@@ -1543,6 +1562,29 @@ same as [`test([name], { only: true }[, fn])`][it options].
 Alias for [`suite()`][].
 
 The `describe()` function is imported from the `node:test` module.
+
+## `describe.each([testCases])([name][, options][, fn])`
+
+<!-- YAML
+added: REPLACEME
+-->
+
+* `testCases` {Array} An array of test cases. Each test case is an array of
+  arguments to pass to the test
+
+```js
+  describe('add', () => {
+    describe.each([
+      [1, 2, 3],
+      [1, 3, 4],
+      [2, 3, 5],
+    ])('given %d and %d', (a, b, expected) => {
+      it(`returns ${expected}`, () => {
+        equal(a + b, expected);
+      });
+    });
+  });
+```
 
 ## `describe.skip([name][, options][, fn])`
 
@@ -1582,6 +1624,25 @@ changes:
 Alias for [`test()`][].
 
 The `it()` function is imported from the `node:test` module.
+
+## `it.each([testCases])([name][, options][, fn])`
+
+<!-- YAML
+added: REPLACEME
+-->
+
+* `testCases` {Array} An array of test cases. Each test case is an array of
+  arguments to pass to the test
+
+```js
+  it.each([
+    [1, 2, 3],
+    [1, 3, 4],
+    [2, 3, 5],
+  ])('given %d and %d', (a, b, expected) => {
+    equal(a + b, expected);
+  });
+```
 
 ## `it.skip([name][, options][, fn])`
 
