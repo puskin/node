@@ -657,6 +657,11 @@ describe('Object Comparison Tests', () => {
         actual: [1, 2, 3],
         expected: [2],
       },
+      {
+        description: 'ensures that File extends Blob',
+        actual: Object.getPrototypeOf(File.prototype),
+        expected: Blob.prototype
+      },
     ].forEach(({ description, actual, expected }) => {
       it(description, () => {
         assert.partialDeepStrictEqual(actual, expected);
