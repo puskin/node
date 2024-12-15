@@ -133,6 +133,46 @@ describe('Object Comparison Tests', () => {
           expected: ['0'],
         },
         {
+          description: 'throws when comparing [0] with [-0]',
+          actual: [0],
+          expected: [-0],
+        },
+        {
+          description: 'throws when comparing [0, 0, 0] with [0, -0]',
+          actual: [0, 0, 0],
+          expected: [0, -0],
+        },
+        {
+          description: 'throws when comparing [-0] with [0]',
+          actual: [0],
+          expected: [-0],
+        },
+        {
+          description: 'throws when comparing ["-0"] with [-0]',
+          actual: ['-0'],
+          expected: [-0],
+        },
+        {
+          description: 'throws when comparing [-0] with [0]',
+          actual: [-0],
+          expected: [0],
+        },
+        {
+          description: 'throws when comparing [-0] with ["-0"]',
+          actual: [-0],
+          expected: ['-0'],
+        },
+        {
+          description: 'throws when comparing ["0"] with [0]',
+          actual: ['0'],
+          expected: [0],
+        },
+        {
+          description: 'throws when comparing [0] with ["0"]',
+          actual: [0],
+          expected: ['0'],
+        },
+        {
           description:
             'throws when comparing two Date objects with different times',
           actual: new Date(0),
