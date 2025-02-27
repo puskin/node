@@ -3,7 +3,9 @@
 require('../common');
 const assert = require('assert').strict;
 
-process.env.NODE_DISABLE_COLORS = true;
+process.env.NO_COLOR = '1';
+process.env.NODE_DISABLE_COLORS = '1';
+process.env.FORCE_COLOR = '0';
 
 assert.throws(
   () => {
@@ -13,10 +15,10 @@ assert.throws(
     message: 'Expected values to be strictly deep-equal:\n' +
       '+ actual - expected\n' +
       '\n' +
-      '+ {}\n' +
       '- {\n' +
       '-   foo: \'bar\'\n' +
-      '- }\n',
+      '- }\n' +
+      '+ {}\n',
   });
 
 {
@@ -28,9 +30,9 @@ assert.throws(
       message: 'Expected values to be partially and strictly deep-equal:\n' +
         '+ actual - expected\n' +
         '\n' +
-        '+ {}\n' +
         '- {\n' +
         "-   foo: 'bar'\n" +
-        '- }\n',
+        '- }\n' +
+        '+ {}\n',
     });
 }
